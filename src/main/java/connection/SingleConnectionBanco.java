@@ -10,6 +10,8 @@ public class SingleConnectionBanco {
 	private static String senha = "admin123";
 	private static Connection connection = null;
 	
+	// atributos do banco de dados, cada banco de dados, sql, postgres e etc te
+	
 	
 	public static Connection getConnection() {
 		return connection;

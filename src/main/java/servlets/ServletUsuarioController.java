@@ -37,9 +37,11 @@ public class ServletUsuarioController extends HttpServlet {
 				String idUser = request.getParameter("id");
 
 				daoUsuarioRepository.deletarUser(idUser);
-
+				
+				List<ModelLogin> modelLogins = daoUsuarioRepository.consultaUsuarioList();
+				request.setAttribute("modelLogins", modelLogins);
 				request.setAttribute("msg", "Excluido com sucesso!");
-				request.getRequestDispatcher("principal/usuario.jsp").forward(request, response);
+				request.getRequestDispatcher("principal/cad-usuario.jsp").forward(request, response);
 			} else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("deletarajax")) {
 
 				String idUser = request.getParameter("id");
@@ -60,23 +62,38 @@ public class ServletUsuarioController extends HttpServlet {
 				response.getWriter().write(json);
 
 			} else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("buscarEditar")) {
+
 				String id = request.getParameter("id");
 
-				ModelLogin modelLogin = daoUsuarioRepository.consultaUserId(id);
+				ModelLogin modelLogin = daoUsuarioRepository.consultaUsuarioID(id);
 
-				request.setAttribute("msg", "usuário em edição:");
+				List<ModelLogin> modelLogins = daoUsuarioRepository.consultaUsuarioList();
+				request.setAttribute("modelLogins", modelLogins);
+
+				request.setAttribute("msg", "Usuário em edição");
 				request.setAttribute("modolLogin", modelLogin);
 				request.getRequestDispatcher("principal/cad-usuario.jsp").forward(request, response);
 
-			} 
+			} else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("listarUser")) {
+
+				List<ModelLogin> modelLogins = daoUsuarioRepository.consultaUsuarioList();
+
+				request.setAttribute("msg", "Usuários carregados");
+				request.setAttribute("modelLogins", modelLogins);
+				request.getRequestDispatcher("principal/cad-usuario.jsp").forward(request, response);
+
+			}
 
 			else {
+				List<ModelLogin> modelLogins = daoUsuarioRepository.consultaUsuarioList();
+				request.setAttribute("modelLogins", modelLogins);
+				
 				request.getRequestDispatcher("principal/cad-usuario.jsp").forward(request, response);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			RequestDispatcher redirecionar = request.getRequestDispatcher("erro.jsp");
+			RequestDispatcher redirecionar = request.getRequestDispatcher("errojsp.jsp");
 			request.setAttribute("msg", e.getMessage());
 			redirecionar.forward(request, response);
 		}
@@ -85,47 +102,52 @@ public class ServletUsuarioController extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		
 		try {
-
-			String msg = "Operação realizada com sucesso!";
-
-			String nome = request.getParameter("nome");
-			String email = request.getParameter("email");
-			String login = request.getParameter("login");
-			String senha = request.getParameter("senha");
-			String id = request.getParameter("id");
-
-			ModelLogin modelLogin = new ModelLogin();
-
-			modelLogin.setId(id != null && !id.isEmpty() ? Long.parseLong(id) : null);
-			modelLogin.setNome(nome);
-			modelLogin.setEmail(email);
-			modelLogin.setLogin(login);
-			modelLogin.setSenha(senha);
-
-			if (daoUsuarioRepository.validarLogin(modelLogin.getLogin()) && modelLogin.getId() == null) {
-
-				msg = "Já existe usuário com o login informado, informe outro login";
-			} else {
-
-				if (modelLogin.isNovo()) {
-					msg = "Novo usuário salvo com sucesso!";
-				} else {
-					msg = "ID já existe, dados Atualizados com Sucesso";
-				}
-				modelLogin = daoUsuarioRepository.gravarUser(modelLogin);
-
+			
+		String msg = "Operação realizada com sucesso!";	
+		
+		String id = request.getParameter("id");
+		String nome = request.getParameter("nome");
+		String email = request.getParameter("email");
+		String login = request.getParameter("login");
+		String senha = request.getParameter("senha");
+		
+		ModelLogin modelLogin = new ModelLogin();
+		
+		modelLogin.setId(id != null && !id.isEmpty() ? Long.parseLong(id) : null);
+		modelLogin.setNome(nome);
+		modelLogin.setEmail(email);
+		modelLogin.setLogin(login);
+		modelLogin.setSenha(senha);
+		
+		
+		if (daoUsuarioRepository.validarLogin(modelLogin.getLogin()) && modelLogin.getId() == null) {
+			msg = "Já existe usuário com o mesmo login, informe outro login;";
+		}else {
+			if (modelLogin.isNovo()) {
+				msg = "Gravado com sucesso!";
+			}else {
+				msg= "Atualizado com sucesso!";
 			}
-
-			request.setAttribute("msg", msg);
-			request.setAttribute("modolLogin", modelLogin);
-			request.getRequestDispatcher("principal/cad-usuario.jsp").forward(request, response);
-
+			
+		    modelLogin = daoUsuarioRepository.gravarUser(modelLogin);
+		}
+		
+		
+		 List<ModelLogin> modelLogins = daoUsuarioRepository.consultaUsuarioList();
+	     request.setAttribute("modelLogins", modelLogins);
+		request.setAttribute("msg", msg);
+		request.setAttribute("modolLogin", modelLogin);
+		request.getRequestDispatcher("principal/cad-usuario.jsp").forward(request, response);
+		
 		} catch (Exception e) {
 			e.printStackTrace();
-			RequestDispatcher redirecionar = request.getRequestDispatcher("errojsp.jsp");
+			RequestDispatcher redirecionar = request.getRequestDispatcher("erro.jsp");
 			request.setAttribute("msg", e.getMessage());
 			redirecionar.forward(request, response);
 		}
+		
 	}
+
 }
