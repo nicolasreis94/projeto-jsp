@@ -54,7 +54,29 @@ public class DAOUsuarioRepository {
 
 	}
 
-	public ModelLogin consultaUser(String login) throws Exception {
+	public ModelLogin consultaUser(String login, Long userLogado) throws Exception {
+
+		ModelLogin modelLogin = new ModelLogin();
+		String sql = "select * from model_login where upper(login) = upper('" + login + "') and useradmin is false and usuario_id = " + userLogado;
+		PreparedStatement stat = connection.prepareStatement(sql);
+
+		ResultSet resultado = stat.executeQuery();
+
+		while (resultado.next()) {
+
+			modelLogin.setId(resultado.getLong("id"));
+			modelLogin.setLogin(resultado.getString("login"));
+			modelLogin.setNome(resultado.getString("nome"));
+			modelLogin.setEmail(resultado.getString("email"));
+			modelLogin.setSenha(resultado.getString("senha"));
+
+		}
+
+		return modelLogin;
+
+	}
+	
+	public ModelLogin consultaUserLogado(String login) throws Exception {
 
 		ModelLogin modelLogin = new ModelLogin();
 		String sql = "select * from model_login where upper(login) = upper('" + login + "')";
@@ -76,6 +98,28 @@ public class DAOUsuarioRepository {
 
 	}
 	
+	
+	public ModelLogin consultaUser(String login) throws Exception {
+
+		ModelLogin modelLogin = new ModelLogin();
+		String sql = "select * from model_login where upper(login) = upper('" + login + "') and useradmin is false";
+		PreparedStatement stat = connection.prepareStatement(sql);
+
+		ResultSet resultado = stat.executeQuery();
+
+		while (resultado.next()) {
+
+			modelLogin.setId(resultado.getLong("id"));
+			modelLogin.setLogin(resultado.getString("login"));
+			modelLogin.setNome(resultado.getString("nome"));
+			modelLogin.setEmail(resultado.getString("email"));
+			modelLogin.setSenha(resultado.getString("senha"));
+
+		}
+
+		return modelLogin;
+
+	}
 	
 	public ModelLogin consultaUsuarioID(String id) throws Exception {
 
@@ -142,12 +186,12 @@ public class DAOUsuarioRepository {
 		
 	}
 	
-public List<ModelLogin> consultaUsuarioList() throws Exception {
+public List<ModelLogin> consultaUsuarioList(Long userLogado) throws Exception {
 		
 		List<ModelLogin> retorno = new ArrayList<ModelLogin>();
 		
-		String sql = "select * from model_login where useradmin is false";
-		PreparedStatement statement = connection.prepareStatement(sql);		
+		String sql = "select * from model_login where useradmin is false and usuario_id = " + userLogado;
+		PreparedStatement statement = connection.prepareStatement(sql);
 		
 		ResultSet resultado = statement.executeQuery();
 		
@@ -160,6 +204,37 @@ public List<ModelLogin> consultaUsuarioList() throws Exception {
 			modelLogin.setLogin(resultado.getString("login"));
 			modelLogin.setNome(resultado.getString("nome"));
 			//modelLogin.setSenha(resultado.getString("senha"));
+	
+			
+			retorno.add(modelLogin);
+		}
+		
+		
+		return retorno;
+	}
+	
+	
+	public List<ModelLogin> consultaUsuarioList(String nome, Long userLogado) throws Exception {
+		
+		List<ModelLogin> retorno = new ArrayList<ModelLogin>();
+		
+		String sql = "select * from model_login  where upper(nome) like upper(?) and useradmin is false and usuario_id = ?";
+		PreparedStatement statement = connection.prepareStatement(sql);
+		statement.setString(1, "%" + nome + "%");
+		statement.setLong(2, userLogado);
+		
+		ResultSet resultado = statement.executeQuery();
+		
+		while (resultado.next()) { /*percorrer as linhas de resultado do SQL*/
+			
+			ModelLogin modelLogin = new ModelLogin();
+			
+			modelLogin.setEmail(resultado.getString("email"));
+			modelLogin.setId(resultado.getLong("id"));
+			modelLogin.setLogin(resultado.getString("login"));
+			modelLogin.setNome(resultado.getString("nome"));
+			//modelLogin.setSenha(resultado.getString("senha"));
+	
 			
 			retorno.add(modelLogin);
 		}
